@@ -9,11 +9,11 @@ namespace Demo
         static void Main(string[] args)
         {
             Console.Title = "Demo of Simplified.IO.Smart class";
-                 
+
             try
-            {                                
+            {
                 var drives = Smart.GetDrives();
-                
+
                 foreach (var drive in drives)
                 {
                     Console.WriteLine("-----------------------------------------------------");
@@ -22,18 +22,18 @@ namespace Demo
                     Console.WriteLine("");
 
                     Console.WriteLine("Attribute\t\t\tCurrent  Worst  Threshold  Data  Status");
-                    int maxNameLen = drive.SmartAttributes.Max(s => s.Name.Length);
+                    var maxNameLen = drive.SmartAttributes.Max(s => s.Name.Length);
                     foreach (var attr in drive.SmartAttributes)
                     {
                         if (attr.HasData)
                             Console.WriteLine($"{attr.Name.PadRight(maxNameLen, ' ')} {attr.Current}\t {attr.Worst}\t {attr.Threshold}\t {attr.Data.ToString().PadRight(9, ' ')} {((attr.IsOK) ? "OK" : "BAD")}");
                     }
                     Console.WriteLine();
-                }                
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine("An error occurred: " + e.Message);                
+                Console.WriteLine("An error occurred: " + e.Message);
             }
 
             Console.ReadLine();

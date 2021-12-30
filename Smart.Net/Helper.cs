@@ -8,7 +8,7 @@ namespace Simplified.IO
         {
             try
             {
-                int value = (int)new System.ComponentModel.Int32Converter().ConvertFromString(hex0x0);
+                var value = (int)new System.ComponentModel.Int32Converter().ConvertFromString(hex0x0);
                 return value;
             }
             catch (Exception ex)
@@ -27,8 +27,8 @@ namespace Simplified.IO
                 foreach (var line in splitOnCRLF)
                 {
                     var splitLineOnComma = line.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    string register = splitLineOnComma[0].Trim();
-                    string attributeName = splitLineOnComma[1].Trim();
+                    var register = splitLineOnComma[0].Trim();
+                    var attributeName = splitLineOnComma[1].Trim();
 
                     collection.Add(new SmartAttribute(ConvertStringHexToInt(register), attributeName));
                 }

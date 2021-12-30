@@ -8,7 +8,7 @@ namespace Simplified.IO
     {
         public static DriveCollection GetSmartInformation()
         {
-            DriveCollection drives = new DriveCollection();
+            var drives = new DriveCollection();
             try
             {
                 // TODO: 2017-12-19 - Refactor regions into separate methods.
@@ -16,7 +16,7 @@ namespace Simplified.IO
                 {
                     #region Drive Info
 
-                    Drive drive = new Drive
+                    var drive = new Drive
                     {
                         DeviceID = device.GetPropertyValue("DeviceID").ToString(),
                         PnpDeviceID = device.GetPropertyValue("PNPDeviceID").ToString(),
@@ -49,11 +49,11 @@ namespace Simplified.IO
 
                     #region Overall Smart Status       
 
-                    ManagementScope scope = new ManagementScope("\\\\.\\ROOT\\WMI");
-                    ObjectQuery query = new ObjectQuery(@"SELECT * FROM MSStorageDriver_FailurePredictStatus Where InstanceName like ""%"
-                                                        + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
-                    ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, query);
-                    ManagementObjectCollection queryCollection = searcher.Get();
+                    var scope = new ManagementScope("\\\\.\\ROOT\\WMI");
+                    var query = new ObjectQuery(@"SELECT * FROM MSStorageDriver_FailurePredictStatus Where InstanceName like ""%"
+                                                + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
+                    var searcher = new ManagementObjectSearcher(scope, query);
+                    var queryCollection = searcher.Get();
                     foreach (ManagementObject m in queryCollection)
                     {
                         drive.IsOK = (bool)m.Properties["PredictFailure"].Value == false;
@@ -70,8 +70,8 @@ namespace Simplified.IO
 
                     foreach (ManagementObject data in searcher.Get())
                     {
-                        Byte[] bytes = (Byte[])data.Properties["VendorSpecific"].Value;
-                        for (int i = 0; i < 42; ++i)
+                        var bytes = (Byte[])data.Properties["VendorSpecific"].Value;
+                        for (var i = 0; i < 42; ++i)
                         {
                             try
                             {
@@ -79,12 +79,12 @@ namespace Simplified.IO
 
                                 int flags = bytes[i * 12 + 4]; // least significant status byte, +3 most significant byte, but not used so ignored.
                                                                //bool advisory = (flags & 0x1) == 0x0;
-                                bool failureImminent = (flags & 0x1) == 0x1;
+                                var failureImminent = (flags & 0x1) == 0x1;
                                 //bool onlineDataCollection = (flags & 0x2) == 0x2;
 
                                 int value = bytes[i * 12 + 5];
                                 int worst = bytes[i * 12 + 6];
-                                int vendordata = BitConverter.ToInt32(bytes, i * 12 + 7);
+                                var vendordata = BitConverter.ToInt32(bytes, i * 12 + 7);
                                 if (id == 0) continue;
 
                                 var attr = drive.SmartAttributes.GetAttribute(id);
@@ -105,8 +105,8 @@ namespace Simplified.IO
                                                      + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
                     foreach (ManagementObject data in searcher.Get())
                     {
-                        Byte[] bytes = (Byte[])data.Properties["VendorSpecific"].Value;
-                        for (int i = 0; i < 42; ++i)
+                        var bytes = (Byte[])data.Properties["VendorSpecific"].Value;
+                        for (var i = 0; i < 42; ++i)
                         {
                             try
                             {
