@@ -23,7 +23,7 @@ namespace Simplified.IO
 
             try
             {
-                var splitOnCRLF = Resource.SmartAttributes.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                var splitOnCRLF = textRegisters.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in splitOnCRLF)
                 {
                     var splitLineOnComma = line.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);

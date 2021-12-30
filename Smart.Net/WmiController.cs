@@ -29,7 +29,7 @@ namespace Simplified.IO
 
                     foreach (ManagementObject data in searcher.Get())
                     {
-                        var bytes = (Byte[])data.Properties["VendorSpecific"].Value;
+                        var bytes = (byte[])data.Properties["VendorSpecific"].Value;
                         for (var i = 0; i < 42; ++i)
                         {
                             try
@@ -64,7 +64,7 @@ namespace Simplified.IO
                                                       + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
                     foreach (ManagementObject data in searcher.Get())
                     {
-                        var bytes = (Byte[])data.Properties["VendorSpecific"].Value;
+                        var bytes = (byte[])data.Properties["VendorSpecific"].Value;
                         for (var i = 0; i < 42; ++i)
                         {
                             try
