@@ -14,13 +14,12 @@ namespace Simplified.IO
             {
                 foreach (var device in GetDevices())
                 {
-                    var searcher = CreateSearcher();
                     var drive = GetDrive(device);
                     drive.DriveLetters = GetDriveLetters(device);
-                    drive.IsOK = GetOverallStatus(searcher, drive);
+                    drive.IsOK = GetOverallStatus(drive);
                     drive.SmartAttributes.AddRange(Helper.GetSmartRegisters(Resource.SmartAttributes));
-                    AssignSmartValues(searcher, drive);
-                    AssignSmartThresholds(searcher, drive);
+                    AssignSmartValues(drive);
+                    AssignSmartThresholds(drive);
                     drives.Add(drive);
                 }
             }
@@ -38,15 +37,16 @@ namespace Simplified.IO
             return new ManagementObjectSearcher(deviceQuery).Get();
         }
 
-        private static void AssignSmartThresholds(ManagementObjectSearcher searcher, Drive drive)
+        private static void AssignSmartThresholds(Drive drive)
         {
+            var searcher = CreateSearcher();
             var pnpDeviceID = drive.PnpDeviceID.Replace("\\", "\\\\");
             var thresholdQuery = @"Select * from MSStorageDriver_FailurePredictThresholds Where InstanceName like ""%{0}%""";
             searcher.Query = new ObjectQuery(string.Format(thresholdQuery, pnpDeviceID));
 
-            foreach (ManagementObject data in searcher.Get())
+            foreach (ManagementObject threshold in searcher.Get())
             {
-                var bytes = (byte[])data.Properties["VendorSpecific"].Value;
+                var bytes = (byte[])threshold.Properties["VendorSpecific"].Value;
                 for (var i = 0; i < 42; ++i)
                 {
                     try
@@ -70,8 +70,9 @@ namespace Simplified.IO
             }
         }
 
-        private static void AssignSmartValues(ManagementObjectSearcher searcher, Drive drive)
+        private static void AssignSmartValues(Drive drive)
         {
+            var searcher = CreateSearcher();
             var pnpDeviceID = drive.PnpDeviceID.Replace("\\", "\\\\");
             var failureQuery = @"Select * from MSStorageDriver_FailurePredictData Where InstanceName like ""%{0}%""";
             searcher.Query = new ObjectQuery(string.Format(failureQuery, pnpDeviceID));
@@ -111,8 +112,9 @@ namespace Simplified.IO
             }
         }
 
-        private static bool GetOverallStatus(ManagementObjectSearcher searcher, Drive drive)
+        private static bool GetOverallStatus(Drive drive)
         {
+            var searcher = CreateSearcher();
             var isOk = true;
             var pnpDeviceID = drive.PnpDeviceID.Replace("\\", "\\\\");
             var failureQuery = @"SELECT * FROM MSStorageDriver_FailurePredictStatus Where InstanceName like ""%{0}%""";
