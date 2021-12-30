@@ -16,8 +16,8 @@ namespace Simplified.IO
     {
         public SmartAttribute(int register, string attributeName)
         {
-            this.Register = register;
-            this.Name = attributeName;
+            Register = register;
+            Name = attributeName;
         }
 
         public int Register { get; set; }

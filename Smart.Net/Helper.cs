@@ -39,7 +39,7 @@ namespace Simplified.IO
                     string register = splitLineOnComma[0].Trim();
                     string attributeName = splitLineOnComma[1].Trim();
 
-                    collection.Add(new SmartAttribute(Helper.ConvertStringHexToInt(register), attributeName));
+                    collection.Add(new SmartAttribute(ConvertStringHexToInt(register), attributeName));
                 }
             }
             catch (Exception ex)
