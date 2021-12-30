@@ -13,12 +13,6 @@ namespace Simplified.IO
 {
     public class SmartAttributeCollection : List<SmartAttribute>
     {
-
-        public SmartAttributeCollection()
-        {
-
-        }
-
         public SmartAttribute GetAttribute(int registerID)
         {
             foreach (var item in this)
