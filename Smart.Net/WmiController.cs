@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
 
@@ -14,59 +15,17 @@ namespace Simplified.IO
                 // TODO: 2017-12-19 - Refactor regions into separate methods.
                 foreach (var device in new ManagementObjectSearcher(@"SELECT * FROM Win32_DiskDrive").Get())
                 {
-                    #region Drive Info
-
-                    var drive = new Drive
-                    {
-                        DeviceID = device.GetPropertyValue("DeviceID").ToString(),
-                        PnpDeviceID = device.GetPropertyValue("PNPDeviceID").ToString(),
-                        Model = device["Model"]?.ToString().Trim(),
-                        Type = device["InterfaceType"]?.ToString().Trim(),
-                        Serial = device["SerialNumber"]?.ToString().Trim()
-
-                    };
-
-                    #endregion
-
-                    #region Get drive letters
-
-                    foreach (var partition in new ManagementObjectSearcher(
-                        "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='" + device.Properties["DeviceID"].Value
-                        + "'} WHERE AssocClass = Win32_DiskDriveToDiskPartition").Get())
-                    {
-
-                        foreach (var disk in new ManagementObjectSearcher(
-                            "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='"
-                            + partition["DeviceID"]
-                            + "'} WHERE AssocClass = Win32_LogicalDiskToPartition").Get())
-                        {
-                            drive.DriveLetters.Add(disk["Name"].ToString());
-                        }
-
-                    }
-
-                    #endregion
-
-                    #region Overall Smart Status       
-
-                    var scope = new ManagementScope("\\\\.\\ROOT\\WMI");
-                    var query = new ObjectQuery(@"SELECT * FROM MSStorageDriver_FailurePredictStatus Where InstanceName like ""%"
-                                                + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
-                    var searcher = new ManagementObjectSearcher(scope, query);
-                    var queryCollection = searcher.Get();
-                    foreach (ManagementObject m in queryCollection)
-                    {
-                        drive.IsOK = (bool)m.Properties["PredictFailure"].Value == false;
-                    }
-
-                    #endregion
+                    var searcher = CreateSearcher();
+                    var drive = GetDrive(device);
+                    drive.DriveLetters = GetDriveLetters(device);
+                    drive.IsOK = GetOverallStatus(searcher, drive);
 
                     #region Smart Registers
 
                     drive.SmartAttributes.AddRange(Helper.GetSmartRegisters(Resource.SmartAttributes));
 
                     searcher.Query = new ObjectQuery(@"Select * from MSStorageDriver_FailurePredictData Where InstanceName like ""%"
-                                                     + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
+                                                      + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
 
                     foreach (ManagementObject data in searcher.Get())
                     {
@@ -102,7 +61,7 @@ namespace Simplified.IO
                     }
 
                     searcher.Query = new ObjectQuery(@"Select * from MSStorageDriver_FailurePredictThresholds Where InstanceName like ""%"
-                                                     + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
+                                                      + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
                     foreach (ManagementObject data in searcher.Get())
                     {
                         var bytes = (Byte[])data.Properties["VendorSpecific"].Value;
@@ -139,6 +98,71 @@ namespace Simplified.IO
             }
 
             return drives;
+        }
+
+        private static bool GetOverallStatus(ManagementObjectSearcher searcher, Drive drive)
+        {
+            var isOk = true;
+            var pnpDeviceID = drive.PnpDeviceID.Replace("\\", "\\\\");
+            var failureQuery = @"SELECT * FROM MSStorageDriver_FailurePredictStatus Where InstanceName like ""%{0}%""";
+            searcher.Query = new ObjectQuery(string.Format(failureQuery, pnpDeviceID));
+
+            var queryCollection = searcher.Get();
+            foreach (ManagementObject m in queryCollection)
+            {
+                isOk &= (bool)m.Properties["PredictFailure"].Value == false;
+            }
+
+            return isOk;
+        }
+
+        private static ManagementObjectSearcher CreateSearcher()
+        {
+            var scope = new ManagementScope("\\\\.\\ROOT\\WMI");
+            var query = new ObjectQuery();
+            var searcher = new ManagementObjectSearcher(scope, query);
+            return searcher;
+        }
+
+        private static List<string> GetDriveLetters(ManagementBaseObject device)
+        {
+            var driveLetters = new List<string>();
+            var deviceID = device.Properties["DeviceID"].Value.ToString();
+            foreach (var partition in GetPartitions(deviceID))
+            {
+                var partitionID = partition["DeviceID"].ToString();
+                foreach (var disk in GetLogicalDisk(partitionID))
+                {
+                    driveLetters.Add(disk["Name"].ToString());
+                }
+            }
+
+            return driveLetters;
+        }
+
+        private static ManagementObjectCollection GetLogicalDisk(string partitionID)
+        {
+            var logicalDiskQuery = "ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{0}'}} WHERE AssocClass = Win32_LogicalDiskToPartition";
+            return new ManagementObjectSearcher(string.Format(logicalDiskQuery, partitionID)).Get();
+        }
+
+        private static ManagementObjectCollection GetPartitions(string deviceID)
+        {
+            var partitionQuery = "ASSOCIATORS OF {{Win32_DiskDrive.DeviceID='{0}'}} WHERE AssocClass = Win32_DiskDriveToDiskPartition";
+            return new ManagementObjectSearcher(string.Format(partitionQuery, deviceID)).Get();
+        }
+
+        private static Drive GetDrive(ManagementBaseObject device)
+        {
+            var drive = new Drive
+            {
+                DeviceID = device.GetPropertyValue("DeviceID").ToString(),
+                PnpDeviceID = device.GetPropertyValue("PNPDeviceID").ToString(),
+                Model = device["Model"]?.ToString().Trim(),
+                Type = device["InterfaceType"]?.ToString().Trim(),
+                Serial = device["SerialNumber"]?.ToString().Trim()
+            };
+            return drive;
         }
     }
 }
