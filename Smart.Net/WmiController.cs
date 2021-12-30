@@ -8,10 +8,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 */
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
-using System.Text;
 
 namespace Simplified.IO
 {
@@ -21,7 +19,7 @@ namespace Simplified.IO
         {
             DriveCollection drives = new DriveCollection();
             try
-            {      
+            {
                 // TODO: 2017-12-19 - Refactor regions into separate methods.
                 foreach (var device in new ManagementObjectSearcher(@"SELECT * FROM Win32_DiskDrive").Get())
                 {
@@ -67,7 +65,7 @@ namespace Simplified.IO
                     ManagementObjectCollection queryCollection = searcher.Get();
                     foreach (ManagementObject m in queryCollection)
                     {
-                        drive.IsOK = (bool) m.Properties["PredictFailure"].Value == false;
+                        drive.IsOK = (bool)m.Properties["PredictFailure"].Value == false;
                     }
 
                     #endregion
@@ -78,7 +76,7 @@ namespace Simplified.IO
 
                     searcher.Query = new ObjectQuery(@"Select * from MSStorageDriver_FailurePredictData Where InstanceName like ""%"
                                                      + drive.PnpDeviceID.Replace("\\", "\\\\") + @"%""");
-                                                            
+
                     foreach (ManagementObject data in searcher.Get())
                     {
                         Byte[] bytes = (Byte[])data.Properties["VendorSpecific"].Value;
@@ -104,12 +102,12 @@ namespace Simplified.IO
                                 attr.Data = vendordata;
                                 attr.IsOK = failureImminent == false;
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 // given key does not exist in attribute collection (attribute not in the dictionary of attributes)
                                 Debug.WriteLine(ex.Message);
                             }
-                        }                        
+                        }
                     }
 
                     searcher.Query = new ObjectQuery(@"Select * from MSStorageDriver_FailurePredictThresholds Where InstanceName like ""%"
@@ -131,7 +129,7 @@ namespace Simplified.IO
                                 // Debug
                                 // Console.WriteLine("{0}\t {1}\t {2}\t {3}\t " + attr.Data + " " + ((attr.IsOK) ? "OK" : ""), attr.Name, attr.Current, attr.Worst, attr.Threshold);
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 // given key does not exist in attribute collection (attribute not in the dictionary of attributes)
                                 Debug.WriteLine(ex.Message);

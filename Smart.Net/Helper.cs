@@ -8,8 +8,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Simplified.IO
 {
@@ -19,7 +17,7 @@ namespace Simplified.IO
         {
             try
             {
-                int value = (int) new System.ComponentModel.Int32Converter().ConvertFromString(hex0x0);
+                int value = (int)new System.ComponentModel.Int32Converter().ConvertFromString(hex0x0);
                 return value;
             }
             catch (Exception ex)
@@ -32,22 +30,22 @@ namespace Simplified.IO
         {
             var collection = new SmartAttributeCollection();
 
-            try 
-	        {	        		        
+            try
+            {
                 var splitOnCRLF = Resource.SmartAttributes.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 foreach (var line in splitOnCRLF)
                 {
-                    var splitLineOnComma = line.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                    var splitLineOnComma = line.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     string register = splitLineOnComma[0].Trim();
                     string attributeName = splitLineOnComma[1].Trim();
 
-                    collection.Add(new SmartAttribute (Helper.ConvertStringHexToInt(register), attributeName));
+                    collection.Add(new SmartAttribute(Helper.ConvertStringHexToInt(register), attributeName));
                 }
-	        }
-	        catch (Exception ex)
-	        {
-		        throw new Exception("GetSmartRegisters failed with error " + ex);
-	        }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("GetSmartRegisters failed with error " + ex);
+            }
 
             return collection;
         }
