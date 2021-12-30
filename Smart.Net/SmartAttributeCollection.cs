@@ -11,35 +11,6 @@ using System.Collections.Generic;
 
 namespace Simplified.IO
 {
-    #region Smart
-    public sealed class SmartAttribute
-    {
-        public SmartAttribute(int register, string attributeName)
-        {
-            Register = register;
-            Name = attributeName;
-        }
-
-        public int Register { get; set; }
-        public string Name { get; set; }
-
-        public int Current { get; set; }
-        public int Worst { get; set; }
-        public int Threshold { get; set; }
-        public int Data { get; set; }
-        public bool IsOK { get; set; }
-
-        public bool HasData
-        {
-            get
-            {
-                if (Current == 0 && Worst == 0 && Threshold == 0 && Data == 0)
-                    return false;
-                return true;
-            }
-        }
-    }
-
     public class SmartAttributeCollection : List<SmartAttribute>
     {
 
@@ -59,33 +30,4 @@ namespace Simplified.IO
             return null;
         }
     }
-    #endregion
-
-    #region Drive
-    public class Drive
-    {
-        public Drive()
-        {
-            SmartAttributes = new SmartAttributeCollection();
-            DriveLetters = new List<string>();
-        }
-
-        public int Index { get; set; }
-
-        public string DeviceID { get; set; }
-        public string PnpDeviceID { get; set; }
-
-        public List<string> DriveLetters { get; set; }
-        public bool IsOK { get; set; }
-        public string Model { get; set; }
-        public string Type { get; set; }
-        public string Serial { get; set; }
-        public SmartAttributeCollection SmartAttributes { get; set; }
-    }
-
-    public class DriveCollection : List<Drive>
-    {
-
-    }
-    #endregion
 }
